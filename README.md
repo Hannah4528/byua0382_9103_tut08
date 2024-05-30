@@ -12,6 +12,8 @@ I choose **music** as the driving factor for the animation. The animation will c
 The size of the **centre circle will get bigger or smaller** as the intensity of the music changes, and the angle of **rotation of the pink arc** will change with the beat of the music.
 
 ### 2.3 Inspiration Reference
+I was inspired by audio visualisation pieces. These works usually appear as relaxing videos on YouTube or in music apps that provide users with a customised music visualisation experience to enhance the pleasure of music listening. These types of works take the spectral data of audio and transform it into visual elements such as colours, shapes and movement to better show the rhythm, emotion and structure of the music.
+Here is one of the inspiration video from Youtube: [Youtube - Music Visualisation](https://www.youtube.com/watch?v=lBojAa7jNFI)
 
 ### 2.4 Technical explanation
 #### Buttons to control music play pause
@@ -44,3 +46,19 @@ if (song.isPlaying()) {
     }
 }
 ```
+2. The dots in the big circle zoom in and out to the music.
+- Add a **parameter spectrum** to the draw method of the CirclePattern class to determine if the song is playing. And introduce an **adjustedDiameter variable**.(reference from Chatgpt)
+- When spectrum data exists, use the value of spectrum[0] to adjust adjustedDiameter dynamically, use adjustedDiameter to draw the small circle, but not change the original smallCircleDiameter.
+- The main code is as follows:
+```
+draw(scale, spectrum = null) {
+    let adjustedDiameter = this.smallCircleDiameter;
+    if (spectrum) {
+      let freqValue = spectrum[0];
+      adjustedDiameter = map(freqValue, 0, 255, this.smallCircleDiameter, this.smallCircleDiameter * 2);
+    }
+
+    this.drawBigCircle(scale);
+    this.drawSmallCircles(scale, adjustedDiameter);
+  }
+  ```

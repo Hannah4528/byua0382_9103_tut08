@@ -1,5 +1,5 @@
 let mediumCircles = [];
-const numMedumCircles = 100;
+const numMediumCircles = 100;
 const circleRadius = 90;
 
 const spacing = 220; 
@@ -67,9 +67,9 @@ function draw() {
   //across the frequency spectrum
   let spectrum = fft.analyze();
 
-  //Calculating the rotation angle
+  // Calculating the rotation angle
   // It is assumed that the amplitude of the first band of the spectrum data 
-  //is used to control the rotation angle
+  // is used to control the rotation angle.
   let rotationAngle = map(spectrum[0], 0, 255, 0, 360);
 
   // Calculate the scaling
@@ -89,10 +89,10 @@ function draw() {
   if (song.isPlaying()) {
     //big circle
     for (const bigCircle of bigCircles) {
-      bigCircle.draw(scale);
+      bigCircle.draw(scale, spectrum);
     }
     //medium-sized circle with pink arc
-    for (const mediumCircle of mediumCircles){
+    for (const mediumCircle of mediumCircles) {
       mediumCircle.angle += rotationAngle;
       mediumCircle.display(scale);
     }
@@ -132,7 +132,7 @@ function initialMediumCircles() {
   let y = 50;
   let yOffset = 0; //make it lean
 
-  for (let i = 0; i < numMedumCircles; i++) {
+  for (let i = 0; i < numMediumCircles; i++) {
     // If the next circle would exceed the width of the canvas, 
     // it moves to the next row.
     if (x - 8*circleRadius > width) {
@@ -215,7 +215,6 @@ class MediumCircle {
     pop();
   }
 }
-
 
 //------------------------------------colourful chain-----------------------------------------
 function initializeBorders() {
@@ -375,10 +374,17 @@ class CirclePattern {
     this.smallCircleColor = smallCircleColor;
   }
 
-  draw(scale) {
+  draw(scale, spectrum = null) {
+    //When spectrum data is present, the value of spectrum[0] is used to dynamically adjustedDiameter 
+    //without changing the original smallCircleDiameter.
+    let adjustedDiameter = this.smallCircleDiameter;
+    if (spectrum) {
+      let freqValue = spectrum[40];
+      adjustedDiameter = map(freqValue, 0, 255, this.smallCircleDiameter/1.5, this.smallCircleDiameter*1.3);
+    }
 
     this.drawBigCircle(scale);
-    this.drawSmallCircles(scale, this.smallCircleDiameter);
+    this.drawSmallCircles(scale, adjustedDiameter);
   }
 
   drawBigCircle(scale) {
@@ -388,16 +394,16 @@ class CirclePattern {
     ellipse(this.x* scale, this.y* scale, bigCircleDiameter);
   }
 
-  drawSmallCircles(scale) {
+  drawSmallCircles(scale, adjustedDiameter) {
     for (let r = 0; r < this.rings; r++) {
-      let radius = (r + 1.5) * this.smallCircleDiameter * 1.4* scale;
+      let radius = (r + 1.5) * adjustedDiameter * 1.4* scale;
       let numSmallCircles = 1 + r * 8;
       for (let i = 0; i < numSmallCircles; i++) {
         let angle = 360 / numSmallCircles * i;
         let x = this.x* scale + radius * cos(angle);
         let y = this.y* scale+ radius * sin(angle);
         fill(this.smallCircleColor);
-        ellipse(x, y, this.smallCircleDiameter* scale);
+        ellipse(x, y, adjustedDiameter* scale);
       }
     }
   }

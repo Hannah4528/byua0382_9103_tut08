@@ -11,11 +11,49 @@ const numBorders = 100;
 let bigCircles = [];
 const numBigCircles  = 100;
 
+let song, fft;
+//number of frequency bands  
+let numBins = 128;  
+//This averages the values of the frequency bands over time 
+//so it doesn't jump around too much
+//Smoothing can be a value between 0 and 1
+let smoothing = 0.8; 
+let button;
+let buttonColor;
+function preload() {
+  //This sound is reference by https://freesound.org/people/AudioCoffee/sounds/717288/
+  song = loadSound("assets/717288__audiocoffee__for-documentary-loop.wav");
+  
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  angleMode(DEGREES);
+
   colorMode(HSB);
+
+  fft = new p5.FFT(smoothing, numBins);
+  song.connect(fft);
+
+  button = createButton("Play / Pause");
+  button.position((width - button.width) / 2, height - button.height - 30);
+  
+  //reference from https://p5js.org/reference/#/p5.Element/style and Chatgpt
+  //change the style of the button
+  //how to use HSB style
+  buttonColor = color(82, 100, 80);
+  let textColor = color(0, 0, 100);
+  button.style('background-color', buttonColor);
+  button.style('color', textColor);
+  button.style('padding', '10px 20px');
+  button.style('font-size', '15px');
+  button.style('border', 'none');
+  button.style('border-radius', '10px');
+  button.style('font-family', 'Century Gothic');
+
+  button.mousePressed(play_pause);
+  button.mouseReleased(reset_button_color);
+
+  angleMode(DEGREES);
 
   initialMediumCircles();
   initializeBorders();
@@ -24,6 +62,10 @@ function setup() {
 
 function draw() {
   background(207, 82, 35);
+
+  //The analyze() method returns an array of amplitude values 
+  //across the frequency spectrum
+  let spectrum = fft.analyze();
 
   // Calculate the scaling
   let minDimension = min(windowWidth, windowHeight);
@@ -50,8 +92,23 @@ function draw() {
 
 }
 
+function play_pause() {
+  if (song.isPlaying()) {
+    song.stop();
+  } else {
+    song.loop();
+  }
+  let buttonColor2 = color(75, 34, 80); 
+  button.style('background-color', buttonColor2);
+}
+
+function reset_button_color() {
+  button.style('background-color', buttonColor);
+}
+
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+  button.position((width - button.width) / 2, height - button.height - 30);
 }
 
 // -----------------------------medium-sized circle with pink arc--------------------------------

@@ -67,6 +67,11 @@ function draw() {
   //across the frequency spectrum
   let spectrum = fft.analyze();
 
+  //Calculating the rotation angle
+  // It is assumed that the amplitude of the first band of the spectrum data 
+  //is used to control the rotation angle
+  let rotationAngle = map(spectrum[0], 0, 255, 0, 360);
+
   // Calculate the scaling
   let minDimension = min(windowWidth, windowHeight);
   let scale = minDimension / 600; 
@@ -80,16 +85,25 @@ function draw() {
     border2.display(scale);
   }
 
-  //big circle
-  for (const bigCircle of bigCircles) {
-    bigCircle.draw(scale);
+  //The image starts to move while the music is playing
+  if (song.isPlaying()) {
+    //big circle
+    for (const bigCircle of bigCircles) {
+      bigCircle.draw(scale);
+    }
+    //medium-sized circle with pink arc
+    for (const mediumCircle of mediumCircles){
+      mediumCircle.angle += rotationAngle;
+      mediumCircle.display(scale);
+    }
+  }else{
+    for (const bigCircle of bigCircles) {
+      bigCircle.draw(scale);
+    }
+    for (const mediumCircle of mediumCircles){
+      mediumCircle.display(scale);
+    }
   }
-
-  //medium-sized circle with pink arc
-  for (const mediumCircle of mediumCircles){
-    mediumCircle.display(scale);
-  }
-
 }
 
 function play_pause() {
@@ -214,7 +228,7 @@ function initializeBorders() {
 
   for (let i = 0; i < numBorders; i++) {
 
-    if (x - 4*circleRadius> width) {
+    if (x - 8*circleRadius> width) {
       x = 60;
       y += spacing;
       yOffset = 0; 
@@ -362,8 +376,9 @@ class CirclePattern {
   }
 
   draw(scale) {
+
     this.drawBigCircle(scale);
-    this.drawSmallCircles(scale);
+    this.drawSmallCircles(scale, this.smallCircleDiameter);
   }
 
   drawBigCircle(scale) {
